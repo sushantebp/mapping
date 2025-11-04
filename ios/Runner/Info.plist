@@ -45,14 +45,28 @@
 		<true />
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true />
+
 		<key>NSAppTransportSecurity</key>
 		<dict>
 			<key>NSAllowsArbitraryLoads</key>
 			<true />
 		</dict>
+
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>location</string>
 		</array>
+
+		<!-- Location permissions -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Your location is needed to show your position on the map while using the app.</string>
+
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Your location is needed to provide location updates even in the background for
+			better experience.</string>
+
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>Your location is needed to provide continuous tracking even when the app is not in
+			the foreground.</string>
 	</dict>
 </plist>
