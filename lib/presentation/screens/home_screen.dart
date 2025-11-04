@@ -3,9 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:auto_route/annotations.dart';
 import 'package:latlong2/latlong.dart';
+
 import 'package:mapping/core/core.dart';
 import 'package:mapping/data/data.dart';
-import 'package:mapping/presentation/cubit/home_cubit.dart';
+import 'package:mapping/presentation/presentation.dart';
 
 @RoutePage()
 class HomeScreen extends StatefulWidget {
@@ -28,18 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _mapController.dispose();
     super.dispose();
-  }
-
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
-  }
-
-  Widget initial() => const Center(child: Text("Welcome!"));
-
-  Widget loading() {
-    return const Center(child: CircularProgressIndicator.adaptive());
   }
 
   Widget loaded(PositionModel position) {
@@ -77,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget failure(String message) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showSnackBar(message);
+      ToastUtils.showError(message);
     });
     return Center(
       child: Text(message, style: const TextStyle(color: Colors.red)),
@@ -87,16 +76,36 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        child: const Icon(Icons.map),
+      ),
       body: BlocBuilder<HomeCubit, HomeState>(
         builder: (context, state) {
           return state.when(
-            initial: initial,
-            loading: loading,
+            initial: () => const InitialWidget(),
+            loading: () => const LoadingWidget(),
             loaded: loaded,
             failure: failure,
           );
         },
       ),
     );
+  }
+}
+
+class InitialWidget extends StatelessWidget {
+  const InitialWidget({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: Text("Welcome!"));
+  }
+}
+
+class LoadingWidget extends StatelessWidget {
+  const LoadingWidget({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return const Center(child: CircularProgressIndicator.adaptive());
   }
 }
