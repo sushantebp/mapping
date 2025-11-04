@@ -38,6 +38,9 @@ dependencies:
   dio: ^5.9.0
   flutter_map: ^8.2.2
   latlong2: ^0.9.1
+  flutter_osm_plugin: ^1.4.2
+  geolocator: ^14.0.2
+  pointer_interceptor: ^0.10.1+2
 
 dev_dependencies:
   flutter_test:
