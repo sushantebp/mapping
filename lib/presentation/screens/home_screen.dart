@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -16,9 +17,13 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final MapController _mapController = MapController();
+  final _mapController = MapController();
   final _searchController = TextEditingController();
   final _key = GlobalKey<FormState>();
+
+  final _destKey = GlobalKey<FormState>();
+  final _currentLocationCter = TextEditingController();
+  final _destinationCter = TextEditingController();
 
   @override
   void initState() {
@@ -30,6 +35,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _mapController.dispose();
     _searchController.dispose();
+    _currentLocationCter.dispose();
+    _destinationCter.dispose();
     super.dispose();
   }
 
@@ -46,12 +53,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget loaded(PositionModel position) {
-    final latLng = LatLng(position.lat, position.lng);
+    // final latLng = LatLng(position.lat, position.lng);
+    final latLng = LatLng(27.6864, 85.3154);
+    // initalLang = your location
+    // finalLang = destination location
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _mapController.move(latLng, 15.0);
     });
 
+    final List<Polyline> polylines = [
+      Polyline(
+        points: [latLng, LatLng(27.6835, 85.3147), LatLng(27.6710, 85.3140)],
+        color: Colors.red,
+        strokeWidth: 4,
+      ),
+    ];
+
+    final List<Polygon> polygons = [
+      Polygon(
+        points: [latLng, LatLng(27.6835, 85.3147), LatLng(27.6710, 85.3140)],
+      ),
+    ];
+
+    final List<CircleMarker> circles = [
+      CircleMarker(
+        point: latLng,
+        radius: 50,
+        color: Colors.blue.withValues(alpha: 0.3),
+      ),
+    ];
     return Stack(
       children: [
         FlutterMap(
@@ -76,6 +107,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ],
             ),
+            CircleLayer(circles: circles),
+            PolylineLayer(polylines: polylines),
+            PolygonLayer(polygons: polygons),
           ],
         ),
         Positioned(
@@ -120,6 +154,57 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () => context.router.push(const LocateRoute()),
+      //   child: const Icon(Icons.my_location),
+      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog.adaptive(
+                actions: [
+                  Form(
+                    key: _destKey,
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        children: [
+                          CustomTextField(
+                            controller: _currentLocationCter,
+                            placeholder: "Your Location",
+                          ),
+                          const SizedBox(height: AppSize.spaceMedium),
+                          CustomTextField(
+                            controller: _destinationCter,
+                            placeholder: "Choose destination",
+                          ),
+                          const SizedBox(height: AppSize.spaceLarge),
+                          AppButton(
+                            title: "Get Route",
+                            variant: AppButtonVariant.secondary,
+                            onPressed: () {},
+                          ),
+                          // ready-made location that is current location
+                          AppButton(
+                            title: "Select Your Location",
+                            onPressed: () {
+                              // this should invoke and place in your location there
+                            },
+                            variant: AppButtonVariant.text,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+        child: const Icon(Icons.location_on_outlined),
+      ),
       body: BlocListener<PlaceCubit, PlaceState>(
         listener: (context, state) {
           // when place cubit has postiin
