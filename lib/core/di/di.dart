@@ -8,9 +8,14 @@ final GetIt sl = GetIt.instance;
 
 void initDependencies() {
   sl.registerSingleton<PermissonService>(PermissonService());
+  sl.registerSingleton<DioClient>(DioClient());
+  sl.registerSingleton<NetworkService>(NetworkService());
 
   sl.registerLazySingleton<LocationLocalDataSource>(
-    () => LocationLocalDataSourceImpl(sl<PermissonService>()),
+    () => LocationLocalDataSourceImpl(
+      sl<PermissonService>(),
+      sl<NetworkService>(),
+    ),
   );
 
   sl.registerLazySingleton<HomeRepository>(

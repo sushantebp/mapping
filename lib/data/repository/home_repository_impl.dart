@@ -21,4 +21,22 @@ class HomeRepositoryImpl extends HomeRepository {
       return Left(UnknownnException("Something went wrong: $e"));
     }
   }
+
+  @override
+  Future<Result<PositionModel>> fetchPlaceInfo(String query) async {
+    try {
+      final result = await _localDataSource.getPlaceInfo(query);
+      return result.fold((failure) => Left(failure), (placeModel) {
+        final positionModel = PositionModel(
+          lat: double.parse(placeModel.lat),
+          lng: double.parse(placeModel.lon),
+        );
+        return Right(positionModel);
+      });
+    } catch (e) {
+      return Left(
+        UnknownnException("Something went wrong fetching place info: $e"),
+      );
+    }
+  }
 }

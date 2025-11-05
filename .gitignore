@@ -50,3 +50,7 @@ app.*.map.json
 *.gr.dart
 *.freezed.dart
 *.g.dart
+
+todo.md
+
+.env
