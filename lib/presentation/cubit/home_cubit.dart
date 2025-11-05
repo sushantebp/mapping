@@ -1,12 +1,15 @@
-import 'package:bloc/bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+
+import 'package:mapping/core/core.dart';
 import 'package:mapping/data/data.dart';
 import 'package:mapping/domain/domain.dart';
 
 part 'home_state.dart';
 part 'home_cubit.freezed.dart';
 
-class HomeCubit extends Cubit<HomeState> {
+// get lat and lon from placecubit and override here
+
+class HomeCubit extends BaseCubit<HomeState> {
   final HomeRepository _homeRepository;
 
   HomeCubit(this._homeRepository) : super(const HomeState.initial());
@@ -17,12 +20,15 @@ class HomeCubit extends Cubit<HomeState> {
       final result = await _homeRepository.getCurrentLocation();
 
       result.fold(
-        (failure) =>
-            emit(HomeState.failure(failure.message ?? 'Unknown error')),
-        (position) => emit(HomeState.loaded(position: position)),
+        (failure) => emit(_Failure(failure.message ?? 'Unknown error')),
+        (position) => emit(_Loaded(position: position)),
       );
     } catch (e) {
-      emit(HomeState.failure('Unexpected error occurred: $e'));
+      emit(_Failure('Unexpected error occurred: $e'));
     }
+  }
+
+  void updatePosition(PositionModel position) {
+    emit(_Loaded(position: position));
   }
 }
