@@ -142,9 +142,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: () {
-                      context.read<CafeCubit>().getCafe();
-                    },
+                    onPressed: () => context.read<CafeCubit>().getCafe(),
                     child: const Text('Show Cafes'),
                   ),
                   const SizedBox(width: 12),

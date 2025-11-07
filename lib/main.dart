@@ -5,8 +5,6 @@ import 'package:hive_ce_flutter/hive_flutter.dart';
 import 'package:mapping/core/core.dart';
 import 'package:mapping/core/di/di.dart';
 import 'package:mapping/domain/repository/home_repository.dart';
-import 'package:mapping/presentation/cubit/home_cubit.dart';
-import 'package:mapping/presentation/cubit/place_cubit.dart';
 import 'package:mapping/presentation/presentation.dart';
 
 void main() async {

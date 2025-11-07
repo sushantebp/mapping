@@ -48,7 +48,18 @@ class DataSourceImpl extends DataSource {
   @override
   Future<Result<List<CafeModel>>> getCafe() async {
     try {
-      final response = await _networkService.getCafeList();
+      final position = await _permissonService.determinePosition();
+      final bounds = GeoHelper.getBoundingBox(
+        lat: position.latitude,
+        lon: position.longitude,
+        radiusInKm: 5,
+      );
+      final response = await _networkService.getCafeList(
+        bounds['south']!,
+        bounds['west']!,
+        bounds['north']!,
+        bounds['east']!,
+      );
       if (response?.data != null) {
         final data = response?.data as Map<String, dynamic>;
 
@@ -74,7 +85,18 @@ class DataSourceImpl extends DataSource {
   @override
   Future<Result<List<PlaceOfWorshipModel>>> getPlaceOfWorship() async {
     try {
-      final response = await _networkService.getPlaceOfWorship();
+      final position = await _permissonService.determinePosition();
+      final bounds = GeoHelper.getBoundingBox(
+        lat: position.latitude,
+        lon: position.longitude,
+        radiusInKm: 5,
+      );
+      final response = await _networkService.getPlaceOfWorship(
+        bounds['south']!,
+        bounds['west']!,
+        bounds['north']!,
+        bounds['east']!,
+      );
 
       if (response?.data != null) {
         final data = response?.data as Map<String, dynamic>;
