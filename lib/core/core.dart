@@ -23,3 +23,6 @@ export './services/network_service.dart';
 export './widgets/custom_textfield.dart';
 
 export './widgets/app_button.dart';
+
+export './services/clients/osm_dio_client.dart';
+export './services/clients/overpass_dio_client.dart';

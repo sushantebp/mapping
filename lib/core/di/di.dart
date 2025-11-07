@@ -8,18 +8,16 @@ final GetIt sl = GetIt.instance;
 
 void initDependencies() {
   sl.registerSingleton<PermissonService>(PermissonService());
-  sl.registerSingleton<DioClient>(DioClient());
+  sl.registerSingleton<OsmDioClient>(OsmDioClient());
+  sl.registerSingleton<OverpassDioClient>(OverpassDioClient());
   sl.registerSingleton<NetworkService>(NetworkService());
 
-  sl.registerLazySingleton<LocationLocalDataSource>(
-    () => LocationLocalDataSourceImpl(
-      sl<PermissonService>(),
-      sl<NetworkService>(),
-    ),
+  sl.registerLazySingleton<DataSource>(
+    () => DataSourceImpl(sl<PermissonService>(), sl<NetworkService>()),
   );
 
   sl.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(sl<LocationLocalDataSource>()),
+    () => HomeRepositoryImpl(sl<DataSource>()),
   );
   sl.registerFactory<HomeCubit>(() => HomeCubit(sl<HomeRepository>()));
 }

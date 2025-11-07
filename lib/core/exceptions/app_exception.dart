@@ -1,13 +1,21 @@
 abstract class AppException implements Exception {
   final String? message;
+
   AppException([this.message]);
+
   @override
   String toString() => message ?? 'An unknown error occurred.';
 }
 
 class ApiException extends AppException {
   final int? statusCode;
+
   ApiException(this.statusCode, [String? message]) : super(message);
+
+  @override
+  String toString() {
+    return 'ApiException (Status Code: $statusCode): ${message ?? 'An error occurred'}';
+  }
 }
 
 class LocationException extends AppException {
@@ -26,6 +34,28 @@ class LocationException extends AppException {
       LocationException(message ?? 'Unknown location error occurred.');
 }
 
-class UnknownnException extends AppException {
-  UnknownnException([super.message = "Something went wrong."]);
+class UnknownException extends AppException {
+  UnknownException([super.message = "Something went wrong."]);
+
+  @override
+  String toString() =>
+      'UnknownException: ${message ?? 'An unknown error occurred.'}';
+}
+
+class FetchCafeException extends AppException {
+  FetchCafeException([super.message = "Error fetching cafe data."]);
+
+  @override
+  String toString() =>
+      'FetchCafeException: ${message ?? 'Error fetching cafe data.'}';
+}
+
+class FetchPlaceOfWorshipException extends AppException {
+  FetchPlaceOfWorshipException([
+    super.message = "Error fetching place of worship data.",
+  ]);
+
+  @override
+  String toString() =>
+      'FetchPlaceOfWorshipException: ${message ?? 'Error fetching place of worship data.'}';
 }
