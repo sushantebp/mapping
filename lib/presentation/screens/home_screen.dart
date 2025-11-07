@@ -20,10 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
   final _mapController = MapController();
   final _searchController = TextEditingController();
   final _key = GlobalKey<FormState>();
-
-  final _destKey = GlobalKey<FormState>();
-  final _currentLocationCter = TextEditingController();
-  final _destinationCter = TextEditingController();
+  List<Marker> cafeMarkers = [];
+  List<Marker> worshipMarkers = [];
 
   @override
   void initState() {
@@ -35,8 +33,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _mapController.dispose();
     _searchController.dispose();
-    _currentLocationCter.dispose();
-    _destinationCter.dispose();
     super.dispose();
   }
 
@@ -52,93 +48,144 @@ class _HomeScreenState extends State<HomeScreen> {
     return const Center(child: CircularProgressIndicator.adaptive());
   }
 
+  // Function to display the details when a marker is tapped
+  void _showPlaceDetails(String title) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(title),
+        content: const Text('Tap on a marker to see more details!'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget loaded(PositionModel position) {
-    // final latLng = LatLng(position.lat, position.lng);
-    final latLng = LatLng(27.6864, 85.3154);
-    // initalLang = your location
-    // finalLang = destination location
+    final latLng = LatLng(position.lat, position.lng);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _mapController.move(latLng, 15.0);
     });
 
-    final List<Polyline> polylines = [
-      Polyline(
-        points: [latLng, LatLng(27.6835, 85.3147), LatLng(27.6710, 85.3140)],
-        color: Colors.red,
-        strokeWidth: 4,
-      ),
-    ];
-
-    final List<Polygon> polygons = [
-      Polygon(
-        points: [latLng, LatLng(27.6835, 85.3147), LatLng(27.6710, 85.3140)],
-      ),
-    ];
-
-    final List<CircleMarker> circles = [
-      CircleMarker(
-        point: latLng,
-        radius: 50,
-        color: Colors.blue.withValues(alpha: 0.3),
-      ),
-    ];
-    return Stack(
-      children: [
-        FlutterMap(
-          mapController: _mapController,
-          options: MapOptions(initialCenter: latLng, initialZoom: 15.0),
-          children: [
-            TileLayer(
-              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-              userAgentPackageName: AppConstant.appPackageName,
-            ),
-            MarkerLayer(
-              markers: [
-                Marker(
+    return BlocListener<CafeCubit, CafeState>(
+      listener: (context, cafeState) {
+        cafeState.whenOrNull(
+          loaded: (cafeList) {
+            setState(() {
+              cafeMarkers = cafeList.map((cafe) {
+                return Marker(
                   width: 80.0,
                   height: 80.0,
-                  point: latLng,
-                  child: const Icon(
-                    Icons.location_pin,
-                    color: Colors.red,
-                    size: 40,
+                  point: LatLng(cafe.lat, cafe.lon),
+                  child: GestureDetector(
+                    onTap: () => _showPlaceDetails(cafe.name ?? 'Unnamed Cafe'),
+                    child: const Icon(
+                      Icons.local_cafe,
+                      color: Colors.green,
+                      size: 30,
+                    ),
                   ),
+                );
+              }).toList();
+            });
+          },
+        );
+      },
+      child: BlocListener<PlaceOfWorshipCubit, PlaceOfWorshipState>(
+        listener: (context, placeState) {
+          placeState.whenOrNull(
+            loaded: (placeList) {
+              setState(() {
+                worshipMarkers = placeList.map((place) {
+                  return Marker(
+                    width: 80.0,
+                    height: 80.0,
+                    point: LatLng(place.lat, place.lon),
+                    child: GestureDetector(
+                      onTap: () =>
+                          _showPlaceDetails(place.name ?? 'Unnamed Place'),
+                      child: const Icon(
+                        Icons.church,
+                        color: Colors.blue,
+                        size: 10,
+                      ),
+                    ),
+                  );
+                }).toList();
+              });
+            },
+          );
+        },
+        child: Stack(
+          children: [
+            FlutterMap(
+              mapController: _mapController,
+              options: MapOptions(initialCenter: latLng, initialZoom: 15.0),
+              children: [
+                TileLayer(
+                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  userAgentPackageName: AppConstant.appPackageName,
                 ),
+                MarkerLayer(markers: [...cafeMarkers, ...worshipMarkers]),
               ],
             ),
-            CircleLayer(circles: circles),
-            PolylineLayer(polylines: polylines),
-            PolygonLayer(polygons: polygons),
+            Positioned(
+              top: 120,
+              left: 12,
+              right: 12,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<CafeCubit>().getCafe();
+                    },
+                    child: const Text('Show Cafes'),
+                  ),
+                  const SizedBox(width: 12),
+                  ElevatedButton(
+                    onPressed: () {
+                      context.read<PlaceOfWorshipCubit>().getCafe();
+                    },
+                    child: const Text('Show Places of Worship'),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 54,
+              left: 12,
+              right: 12,
+              child: Form(
+                key: _key,
+                child: CustomTextField(
+                  controller: _searchController,
+                  isRounded: true,
+                  placeholder: "Search place",
+                  prefix: const Icon(Icons.place_outlined),
+                  showClearButtonOnTyping: true,
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Please enter a search term';
+                    }
+                    return null;
+                  },
+                  onFieldSubmitted: (query) {
+                    if (_key.currentState?.validate() ?? false) {
+                      context.read<PlaceCubit>().searchResult(query);
+                    }
+                  },
+                ),
+              ),
+            ),
           ],
         ),
-        Positioned(
-          top: 54,
-          left: 12,
-          right: 12,
-          child: Form(
-            key: _key,
-            child: CustomTextField(
-              controller: _searchController,
-              isRounded: true,
-              placeholder: "Search place",
-              prefix: const Icon(Icons.place_outlined),
-              showClearButtonOnTyping: true,
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a search term';
-                }
-                return null;
-              },
-              onFieldSubmitted: (query) {
-                if (_key.currentState?.validate() ?? false) {
-                  context.read<PlaceCubit>().searchResult(query);
-                }
-              },
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 
@@ -154,61 +201,8 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () => context.router.push(const LocateRoute()),
-      //   child: const Icon(Icons.my_location),
-      // ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return AlertDialog.adaptive(
-                actions: [
-                  Form(
-                    key: _destKey,
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Column(
-                        children: [
-                          CustomTextField(
-                            controller: _currentLocationCter,
-                            placeholder: "Your Location",
-                          ),
-                          const SizedBox(height: AppSize.spaceMedium),
-                          CustomTextField(
-                            controller: _destinationCter,
-                            placeholder: "Choose destination",
-                          ),
-                          const SizedBox(height: AppSize.spaceLarge),
-                          AppButton(
-                            title: "Get Route",
-                            variant: AppButtonVariant.secondary,
-                            onPressed: () {},
-                          ),
-                          // ready-made location that is current location
-                          AppButton(
-                            title: "Select Your Location",
-                            onPressed: () {
-                              // this should invoke and place in your location there
-                            },
-                            variant: AppButtonVariant.text,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-        child: const Icon(Icons.location_on_outlined),
-      ),
       body: BlocListener<PlaceCubit, PlaceState>(
         listener: (context, state) {
-          // when place cubit has postiin
-          // lets update in loaded here
           state.whenOrNull(
             loaded: (position) =>
                 context.read<HomeCubit>().updatePosition(position),
