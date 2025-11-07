@@ -23,11 +23,21 @@ class NetworkService {
     }
   }
 
-  Future<Response?> getCafeList() async {
+  Future<Response?> getCafeList(
+    double south,
+    double west,
+    double north,
+    double east,
+  ) async {
     try {
       final response = await _overPassDioClient.instance.dio.post(
         AppConstant.interpreter,
-        data: AppConstant.cafeQuery,
+        data: AppConstant.cafeQuery(
+          south: south,
+          west: west,
+          north: north,
+          east: east,
+        ),
       );
       if (response.statusCode == 200) return response;
       return null;
@@ -36,11 +46,21 @@ class NetworkService {
     }
   }
 
-  Future<Response?> getPlaceOfWorship() async {
+  Future<Response?> getPlaceOfWorship(
+    double south,
+    double west,
+    double north,
+    double east,
+  ) async {
     try {
       final response = await _overPassDioClient.instance.dio.post(
         AppConstant.interpreter,
-        data: AppConstant.placeOfWorshipQuery,
+        data: AppConstant.placeOfWorshipQuery(
+          south: south,
+          west: west,
+          north: north,
+          east: east,
+        ),
       );
 
       if (response.statusCode == 200) return response;
